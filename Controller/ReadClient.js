@@ -182,7 +182,6 @@ module.exports = {
     }
   },
   ReadManagment: (req, res) => {
-    console.log("client other");
     try {
       asyncLab.waterfall(
         [

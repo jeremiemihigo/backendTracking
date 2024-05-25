@@ -31,7 +31,12 @@ const {
   AttenteStatut,
 } = require("../Controller/Analyse");
 const { AddData, ReadData } = require("../Controller/DataToTrack");
-const { AddTeams, AddMemberTeam } = require("../Controller/Teams");
+const {
+  AddTeams,
+  AddMemberTeam,
+  DeleteMember,
+  DeleteAction,
+} = require("../Controller/Teams");
 const { Rapport } = require("../Controller/Rapport");
 
 //AgentAdmin
@@ -81,6 +86,8 @@ router.post("/datatotrack", protect, AddData);
 //Team
 router.post("/team", protect, AddTeams);
 router.post("/memberTeam", protect, AddMemberTeam);
+router.post("/deletememberteam", protect, DeleteMember);
+router.post("/deleteaction", protect, DeleteAction);
 
 //Rapport
 router.post("/rapport", Rapport);

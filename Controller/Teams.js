@@ -9,7 +9,7 @@ module.exports = {
     try {
       const { title, role } = req.body;
       const { codeAgent } = req.user;
-      if (!title || !role ) {
+      if (!title || !role) {
         return res.status(201).json("Veuillez renseigner les champs");
       }
       asyncLab.waterfall(
@@ -60,7 +60,8 @@ module.exports = {
   },
   ReadTeams: (req, res) => {
     try {
-      Team.find({}).lean()
+      Team.find({})
+        .lean()
         .then((result) => {
           if (result.length > 0) {
             return res.status(200).json(result);
@@ -75,10 +76,9 @@ module.exports = {
   },
   ReadTeamsRole: (req, res) => {
     try {
-
-      const {role} = req.params
-      console.log(role)
-      Team.find({role:role}).lean()
+      const { role } = req.params;
+      Team.find({ role: role })
+        .lean()
         .then((result) => {
           if (result.length > 0) {
             return res.status(200).json(result);
@@ -105,8 +105,8 @@ module.exports = {
       )
         .then((result) => {
           if (result) {
-            req.recherche = id
-            next()
+            req.recherche = id;
+            next();
           }
         })
         .catch(function (err) {
@@ -165,6 +165,58 @@ module.exports = {
           if (result.length > 0) {
             let data = req.recherche ? result[0] : result.reverse();
             return res.status(200).json(data);
+          }
+        })
+        .catch(function (err) {
+          console.log(err);
+        });
+    } catch (error) {
+      console.log(error);
+    }
+  },
+  DeleteAction: (req, res) => {
+    try {
+      const { document, idAction } = req.body;
+      if (!document || !idAction) {
+        return res.status(201).json("Error");
+      }
+      asyncLab.waterfall([
+        function (done) {
+          Team.findByIdAndUpdate(
+            document,
+            { $pull: { actions: idAction } },
+            { new: true }
+          )
+            .then((result) => {
+              if (result) {
+                return res.status(200).json(document);
+              } else {
+                return res.status(201).json("Error");
+              }
+            })
+            .catch(function (err) {
+              console.log(err);
+            });
+        },
+      ]);
+    } catch (error) {
+      console.log(error);
+    }
+  },
+  DeleteMember: (req, res) => {
+    try {
+      const { id } = req.body;
+      console.log(id);
+      if (!id) {
+        return res.status(201).json("Error");
+      }
+      modelAgentAdmin
+        .findByIdAndUpdate(id, { $unset: { team: "" } }, { new: true })
+        .then((result) => {
+          if (result) {
+            return res.status(200).json(id);
+          } else {
+            return res.status(201).json("Error");
           }
         })
         .catch(function (err) {

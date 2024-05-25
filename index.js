@@ -7,6 +7,7 @@ const app = express();
 app.use(cors());
 
 app.use(express.json({ limit: "50mb" }));
+const { dbvm } = require("./config/bdVM");
 app.use(express.urlencoded({ limit: "50mb" }));
 
 const bodyParser = require("body-parser");
@@ -20,12 +21,10 @@ const port = process.env.PORT || 8000;
 const postTracker = require("./Routes/Post");
 const getTracker = require("./Routes/Read");
 const putTracker = require("./Routes/Update");
-const deleteTracker = require("./Routes/delete");
 
 app.use("/tracker/post", postTracker);
 app.use("/tracker/read", getTracker);
 app.use("/tracker/update", putTracker);
-app.use("/tracker/delete", deleteTracker);
 
 //Start server
 app.listen(port, () => {

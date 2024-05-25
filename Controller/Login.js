@@ -4,7 +4,7 @@ const bcrypt = require("bcrypt");
 
 exports.LoginAgentAdmin = async (req, res) => {
   const { username, password } = req.body;
-
+  console.log(req.body);
   if (!username || !password) {
     return res.status(201).json("Veuillez renseigner les champs");
   }
@@ -25,7 +25,7 @@ exports.LoginAgentAdmin = async (req, res) => {
       return res.status(201).json("Accès non autorisée");
     }
     const token = user.getSignedToken();
-    return res.status(200).json({ token, role : user?.role });
+    return res.status(200).json({ token, role: user?.role });
   } catch (error) {
     res.status(404).json({ success: false, error: error.message });
   }
