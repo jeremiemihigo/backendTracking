@@ -18,6 +18,7 @@ const {
   ReadTeamsRole,
   ReadOneTeam,
 } = require("../Controller/Teams");
+const { ReadClientAction } = require("../Controller/Client");
 
 //AgentAdmin
 router.get("/agent", protect, ReadAgent);
@@ -42,6 +43,7 @@ router.get("/etape", protect, ReadEtape);
 //Clients
 router.get("/clientField", protect, ReadClientField);
 router.get("/readManagment", protect, ReadManagment);
+router.get("/clientAction/:id", protect, ReadClientAction);
 // router.get("/demandeFeedback", protect, ReadDemandFeedback)
 //History
 //Initial

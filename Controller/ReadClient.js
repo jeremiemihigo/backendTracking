@@ -3,6 +3,7 @@ const modelRole = require("../Model/Tracker/Role");
 const modelAction = require("../Model/Tracker/Action");
 const modelTeam = require("../Model/Teams");
 const asyncLab = require("async");
+const { periode } = require("../Static/fonction");
 
 module.exports = {
   //Read Client Field and ZBM
@@ -93,13 +94,7 @@ module.exports = {
             }
           },
           function (recherche, done) {
-            console.log(recherche);
-            const toDay = new Date();
-            const periode = `${
-              toDay.getMonth() + 1 < 10
-                ? "0" + (toDay.getMonth() + 1)
-                : toDay.getMonth() + 1
-            }-${toDay.getFullYear()}`;
+            const periodes = periode();
             modelClient
               .aggregate([
                 {
@@ -152,7 +147,7 @@ module.exports = {
                         $match: {
                           $expr: {
                             $and: [
-                              { $eq: ["$month", periode] },
+                              { $eq: ["$month", periodes] },
                               { $eq: ["$unique_account_id", "$$codeclient"] },
                             ],
                           },
