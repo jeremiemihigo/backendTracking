@@ -1,20 +1,19 @@
-const modelAction = require('../Model/Tracker/Action')
-const modelStatut = require('../Model/Tracker/StatutAction')
-const asyncLab = require('async')
-const { generateString } = require('../Static/fonction')
-const ActionStatus = require('../Model/Tracker/StatutAction')
-
+const modelAction = require("../Model/Tracker/Action");
+const modelStatut = require("../Model/Tracker/StatutAction");
+const asyncLab = require("async");
+const { generateString } = require("../Static/fonction");
+const ActionStatus = require("../Model/Tracker/StatutAction");
 
 module.exports = {
   AddAction: (req, res, next) => {
     try {
-      console.log(req.body)
-      const { idStatus, title, idRole, delai, objectif } = req.body
+      console.log(req.body);
+      const { idStatus, title, color, idRole, delai, objectif } = req.body;
 
       if (!idStatus || !title || !delai) {
-        return res.status(404).json('Please fill in the fields')
+        return res.status(404).json("Please fill in the fields");
       }
-      const { codeAgent } = req.user
+      const { codeAgent } = req.user;
       asyncLab.waterfall(
         [
           function (done) {
@@ -22,14 +21,14 @@ module.exports = {
               .findOne({ idStatus, title })
               .then((conforme) => {
                 if (conforme) {
-                  return res.status(404).json('This action already exists')
+                  return res.status(404).json("This action already exists");
                 } else {
-                  done(null, conforme)
+                  done(null, conforme);
                 }
               })
               .catch(function (err) {
-                return res.status(404).json('Erreur')
-              })
+                return res.status(404).json("Erreur");
+              });
           },
           function (result, done) {
             modelAction
@@ -37,41 +36,42 @@ module.exports = {
                 idStatus,
                 title,
                 idRole,
+                color,
                 idAction: generateString(6),
                 delai,
                 objectif,
                 savedBy: codeAgent,
               })
               .then((response) => {
-                done(response)
+                done(response);
               })
               .catch(function (err) {
-                console.log(err)
-                return res.status(404).json('Erreur')
-              })
+                console.log(err);
+                return res.status(404).json("Erreur");
+              });
           },
         ],
         function (result) {
           if (result) {
-            req.recherche = result.idAction
-            next()
+            req.recherche = result.idAction;
+            next();
           } else {
-            return res.status(404).json('Registration error')
+            return res.status(404).json("Registration error");
           }
-        },
-      )
+        }
+      );
     } catch (error) {
-      console.log(error)
+      console.log(error);
     }
   },
   AddStatut: (req, res) => {
     try {
-      const { idAction, title } = req.body
-      const { codeAgent } = req.user
+      const { idAction, title } = req.body;
+      const { codeAgent } = req.user;
       if (!idAction || !title) {
-        return res.status(201).json('Please fill in the fields')
+        return res.status(201).json("Please fill in the fields");
       }
-      const idStatut = generateString(10)
+      const idStatut = generateString(10);
       asyncLab.waterfall(
         [
           function (done) {
@@ -79,155 +79,157 @@ module.exports = {
               .findOne({ idAction, title })
               .then((exist) => {
                 if (exist) {
-                  return res.status(201).json('This status already exists')
+                  return res.status(201).json("This status already exists");
                 } else {
-                  done(null, exist)
+                  done(null, exist);
                 }
               })
               .catch(function (err) {
-                return res.status(201).json('Registration error')
-              })
+                return res.status(201).json("Registration error");
+              });
           },
           function (exis, done) {
             modelStatut
               .create({ title, idStatut, idAction, savedBy: codeAgent })
 
               .then((action) => {
-                done(action)
+                done(action);
               })
               .catch(function (err) {
-                return res.status(201).json('Registration error')
-              })
+                return res.status(201).json("Registration error");
+              });
           },
         ],
         function (result) {
           if (result) {
-            return res.status(200).json(result)
+            return res.status(200).json(result);
           } else {
-            return res.status(201).json('Registration error')
+            return res.status(201).json("Registration error");
           }
-        },
-      )
+        }
+      );
     } catch (error) {
-      console.log(error)
+      console.log(error);
     }
   },
   ReadStatut: (req, res) => {
     try {
-      const recherche = req.recherche
-      let match = recherche ? { $match: { idRole: recherche } } : { $match: {} }
+      const recherche = req.recherche;
+      let match = recherche
+        ? { $match: { idRole: recherche } }
+        : { $match: {} };
       modelStatut
         .aggregate([
           match,
           {
             $lookup: {
-              from: 'agentadmins',
-              localField: 'savedBy',
-              foreignField: 'codeAgent',
-              as: 'agentSave',
+              from: "agentadmins",
+              localField: "savedBy",
+              foreignField: "codeAgent",
+              as: "agentSave",
             },
           },
           {
-            $unwind: '$agentSave',
+            $unwind: "$agentSave",
           },
           {
             $lookup: {
-              from: 'actions',
-              localField: 'idAction',
-              foreignField: 'idAction',
-              as: 'action',
+              from: "actions",
+              localField: "idAction",
+              foreignField: "idAction",
+              as: "action",
             },
           },
           {
-            $unwind: '$action',
+            $unwind: "$action",
           },
           {
             $lookup: {
-              from: 'statuss',
-              localField: 'action.idStatus',
-              foreignField: 'idStatus',
-              as: 'status',
+              from: "statuss",
+              localField: "action.idStatus",
+              foreignField: "idStatus",
+              as: "status",
             },
           },
           {
-            $unwind: '$status',
+            $unwind: "$status",
           },
           {
             $lookup: {
-              from: 'roles',
-              localField: 'action.idRole',
-              foreignField: 'idRole',
-              as: 'role',
+              from: "roles",
+              localField: "action.idRole",
+              foreignField: "idRole",
+              as: "role",
             },
           },
           {
-            $unwind: '$role',
+            $unwind: "$role",
           },
         ])
         .then((response) => {
           if (response.length > 0) {
-            let data = recherche ? response[0] : response.reverse()
-            return res.status(200).json(data)
+            let data = recherche ? response[0] : response.reverse();
+            return res.status(200).json(data);
           }
-        })
+        });
     } catch (error) {}
   },
   ReadAction: (req, res) => {
     try {
-      const recherche = req.recherche
+      const recherche = req.recherche;
       let match = recherche
         ? { $match: { idAction: recherche } }
-        : { $match: {} }
+        : { $match: {} };
 
       modelAction
         .aggregate([
           match,
           {
             $lookup: {
-              from: 'status',
-              localField: 'idStatus',
-              foreignField: 'idStatus',
-              as: 'status',
+              from: "status",
+              localField: "idStatus",
+              foreignField: "idStatus",
+              as: "status",
             },
           },
           {
-            $unwind: '$status',
-          },
-          {
-            $lookup:{
-              from:"statutactions",
-              localField:"idAction",
-              foreignField:"idAction",
-              as:"statusAction"
-            }
+            $unwind: "$status",
           },
           {
             $lookup: {
-              from: 'roles',
-              localField: 'idRole',
-              foreignField: 'id',
-              as: 'roles',
+              from: "statutactions",
+              localField: "idAction",
+              foreignField: "idAction",
+              as: "statusAction",
+            },
+          },
+          {
+            $lookup: {
+              from: "roles",
+              localField: "idRole",
+              foreignField: "id",
+              as: "roles",
             },
           },
         ])
         .then((result) => {
           if (result.length > 0) {
-            let data = recherche ? result[0] : result.reverse()
-            return res.status(200).json(data)
+            let data = recherche ? result[0] : result.reverse();
+            return res.status(200).json(data);
           }
-        })
+        });
     } catch (error) {
-      console.log(error)
+      console.log(error);
     }
   },
   //Action status
   AddActionStatus: (req, res, next) => {
     try {
-      const { title, idAction,  } = req.body
-      
-      const { codeAgent } = req.user
+      const { title, idAction } = req.body;
+
+      const { codeAgent } = req.user;
       if (!title || !idAction) {
-        return res.status(404).json('Error')
+        return res.status(404).json("Error");
       }
       asyncLab.waterfall(
         [
@@ -239,42 +241,41 @@ module.exports = {
               .lean()
               .then((result) => {
                 if (result) {
-                  return res.status(404).json('this status already exists')
-                
+                  return res.status(404).json("this status already exists");
                 } else {
-                  done(null, true)
+                  done(null, true);
                 }
               })
               .catch(function (err) {
-                console.log(err)
-              })
+                console.log(err);
+              });
           },
           function (result, done) {
-            ActionStatus.create({ 
-              title, 
+            ActionStatus.create({
+              title,
               savedBy: codeAgent,
-              idLabel:generateString(7), 
-              idAction 
+              idLabel: generateString(7),
+              idAction,
             })
               .then((response) => {
-                done(response)
+                done(response);
               })
               .catch(function (err) {
-                console.log(err)
-              })
+                console.log(err);
+              });
           },
         ],
         function (response) {
           if (response) {
-            req.recherche = idAction
-            next()
+            req.recherche = idAction;
+            next();
           } else {
-            return res.status(404).json('Error')
+            return res.status(404).json("Error");
           }
-        },
-      )
+        }
+      );
     } catch (error) {
-      console.log(error)
+      console.log(error);
     }
   },
-}
+};

@@ -38,6 +38,7 @@ const {
   DeleteAction,
 } = require("../Controller/Teams");
 const { Rapport } = require("../Controller/Rapport");
+const { pushClientVisite } = require("../Controller/VisiteMenage");
 
 //AgentAdmin
 router.post("/agent", AddAdminAgent, ReadAgent);
@@ -68,6 +69,7 @@ router.post("/etape", protect, Etape, ReadEtape);
 //Clients
 router.post("/client", protect, Clients);
 router.post("/clientfeedback", protect, PostReponse);
+router.post("/feedbackvm", pushClientVisite);
 // router.get("/demandeFeedback", protect, ReadDemandFeedback)
 router.post("/demandeFeedback", protect, RenseigneFeedback);
 //History

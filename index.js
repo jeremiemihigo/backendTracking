@@ -28,11 +28,12 @@ app.use("/tracker/update", putTracker);
 const { Server } = require("socket.io");
 const io = new Server({
   cors: {
-    origin: "http://localhost:3000",
+    origin: "*",
   },
 });
 const modelClient = require("./Model/Tracker/Client");
 const modelEtape = require("./Model/Tracker/Etapes");
+const modelAction = require("./Model/Tracker/Action");
 const asyncLab = require("async");
 const { ObjectId } = require("mongodb");
 const { periode } = require("./Static/fonction");
@@ -53,15 +54,12 @@ const removeUser = (socketId) => {
   }
 };
 
-const getUser = (socketId) => {
-  return onlineuser.find((user) => user.socketId === socketId);
-};
 io.on("connection", (socket) => {
   socket.on("newUser", (donner) => {
     const { codeAgent, nom } = donner;
     addNewUser(codeAgent, nom, socket.id);
+    io.emit("userConnected", onlineuser);
   });
-  //Affectation statut
   socket.on("renseignefeedback", (donner) => {
     if (donner.type === "feedback") {
       const {
@@ -73,10 +71,11 @@ io.on("connection", (socket) => {
         dateDebut,
         action,
         ancienAction,
+        codeAgent,
       } = donner;
       try {
         let dateFin = new Date();
-        const agent = getUser(socket.id);
+
         asyncLab.waterfall(
           [
             function (done) {
@@ -90,6 +89,20 @@ io.on("connection", (socket) => {
                     let erreur = { content: "Client introuvable", error: true };
                     io.to(socket.id).emit("renseigne", erreur);
                   }
+                })
+                .catch(function (err) {
+                  console.log(err);
+                });
+            },
+            function (result, done) {
+              modelAction
+                .findByIdAndUpdate(
+                  ancienAction._id,
+                  { $set: { lastchange: new Date() } },
+                  { new: true }
+                )
+                .then((response) => {
+                  done(null, result);
                 })
                 .catch(function (err) {
                   console.log(err);
@@ -112,7 +125,7 @@ io.on("connection", (socket) => {
                         dateDebut,
                         delaiPrevu: ancienAction?.delai,
                         dateFin: dateFin,
-                        codeAgent: agent.codeAgent,
+                        codeAgent,
                       },
                     },
                     $set: {
@@ -225,10 +238,10 @@ io.on("connection", (socket) => {
           status,
           role,
           dateDebut,
+          codeAgent,
           action,
         } = donner;
         let dateFin = new Date();
-        const agent = getUser(socket.id);
         asyncLab.waterfall(
           [
             function (done) {
@@ -278,6 +291,20 @@ io.on("connection", (socket) => {
               }
             },
             function (result, etape, done) {
+              modelAction
+                .findByIdAndUpdate(
+                  feedbackSelect._id,
+                  { $set: { lastchange: new Date() } },
+                  { new: true }
+                )
+                .then((response) => {
+                  done(null, result, etape);
+                })
+                .catch(function (err) {
+                  console.log(err);
+                });
+            },
+            function (result, etape, done) {
               modelClient
                 .findByIdAndUpdate(
                   result._id,
@@ -293,7 +320,7 @@ io.on("connection", (socket) => {
                         delaiPrevu: action?.delai,
                         action: action?.title,
                         dateFin: dateFin,
-                        codeAgent: agent?.codeAgent,
+                        codeAgent,
                       },
                     },
                     $set: {
@@ -401,10 +428,9 @@ io.on("connection", (socket) => {
       }
     }
   });
-  //Post client
-
   socket.on("disconnect", () => {
     removeUser(socket.id);
+    io.emit("userConnected", onlineuser);
   });
 });
 io.listen(800);

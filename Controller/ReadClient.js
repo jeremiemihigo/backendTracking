@@ -30,16 +30,7 @@ module.exports = {
                 },
               });
             }
-            if (req.user.role === "SHOP MANAGER") {
-              //tous les clients qui seront assistés par le Technicien
-              done(null, {
-                $match: {
-                  "client.person_in_charge": { $in: ["Tech", "Tech Volant"] },
-                  shop_name: req.user.shop,
-                  active: true,
-                },
-              });
-            }
+
             if (
               [
                 "SYSTEM AND DATA",
@@ -50,7 +41,14 @@ module.exports = {
             ) {
               done(null, { $match: { active: true } });
             }
-            if (["CALL OPERATOR", "PROCESS OFFICER"].includes(req.user.role)) {
+            if (
+              [
+                "CALL OPERATOR",
+                "PROCESS OFFICER",
+                "SHOP MANAGER",
+                "RS",
+              ].includes(req.user.role)
+            ) {
               modelTeam
                 .aggregate([
                   { $match: { idTeam: req.user.team } },
@@ -65,27 +63,46 @@ module.exports = {
                   { $unwind: "$allaction" },
                 ])
                 .then((actions) => {
+                  let table = [];
                   if (actions.length > 0) {
-                    let table = [];
                     for (let i = 0; i < actions.length; i++) {
                       table.push(actions[i].allaction.idAction);
                     }
-                    if (req.user.role === "PROCESS OFFICER") {
-                      done(null, {
-                        $match: {
-                          actionEnCours: { $in: table },
-                          active: true,
-                          shop_region: req.user.region,
-                        },
-                      });
-                    } else {
-                      done(null, {
-                        $match: {
-                          actionEnCours: { $in: table },
-                          active: true,
-                        },
-                      });
-                    }
+                  }
+                  if (req.user.role === "PROCESS OFFICER") {
+                    done(null, {
+                      $match: {
+                        actionEnCours: { $in: table },
+                        active: true,
+                        shop_region: req.user.region,
+                      },
+                    });
+                  }
+                  if (req.user.role === "CALL OPERATOR") {
+                    console.log(table);
+                    done(null, {
+                      $match: {
+                        actionEnCours: { $in: table },
+                        active: true,
+                      },
+                    });
+                  }
+                  if (req.user.role === "SHOP MANAGER") {
+                    done(null, {
+                      $match: {
+                        $or: [
+                          {
+                            "client.person_in_charge": {
+                              $in: ["Tech", "Tech Volant"],
+                            },
+                            visited: "pending",
+                          },
+                          { actionEnCours: { $in: table } },
+                        ],
+                        shop_name: req.user.shop,
+                        active: true,
+                      },
+                    });
                   }
                 })
                 .catch(function (err) {
@@ -94,74 +111,153 @@ module.exports = {
             }
           },
           function (recherche, done) {
+            console.log(recherche);
+            console.log(req.user.role);
             const periodes = periode();
-            modelClient
-              .aggregate([
-                {
-                  $lookup: {
-                    from: "actions",
-                    localField: "actionEnCours",
-                    foreignField: "idAction",
-                    as: "action",
+            if (["SHOP MANAGER", "RS"].includes(req.user.role)) {
+              modelClient
+                .aggregate([
+                  {
+                    $lookup: {
+                      from: "actions",
+                      localField: "actionEnCours",
+                      foreignField: "idAction",
+                      as: "action",
+                    },
                   },
-                },
-                { $unwind: "$action" },
-                {
-                  $lookup: {
-                    from: "status",
-                    localField: "action.idStatus",
-                    foreignField: "idStatus",
-                    as: "status",
+                  { $unwind: "$action" },
+                  {
+                    $lookup: {
+                      from: "status",
+                      localField: "action.idStatus",
+                      foreignField: "idStatus",
+                      as: "status",
+                    },
                   },
-                },
-                { $unwind: "$status" },
-                {
-                  $lookup: {
-                    from: "statutactions",
-                    localField: "action.idAction",
-                    foreignField: "idAction",
-                    as: "statutaction",
+                  { $unwind: "$status" },
+                  {
+                    $lookup: {
+                      from: "statutactions",
+                      localField: "action.idAction",
+                      foreignField: "idAction",
+                      as: "statutaction",
+                    },
                   },
-                },
-                {
-                  $lookup: {
-                    from: "roles",
-                    localField: "action.idRole",
-                    foreignField: "id",
-                    as: "role",
+                  {
+                    $lookup: {
+                      from: "roles",
+                      localField: "action.idRole",
+                      foreignField: "id",
+                      as: "role",
+                    },
                   },
-                },
-                {
-                  $addFields: {
-                    id: "$_id",
-                    actionTitle: "$action.title",
-                    statusTitle: "$status.title",
+                  {
+                    $addFields: {
+                      id: "$_id",
+                      actionTitle: "$action.title",
+                      statusTitle: "$status.title",
+                    },
                   },
-                },
-                {
-                  $lookup: {
-                    from: "datatotracks",
-                    let: { codeclient: "$unique_account_id" },
-                    pipeline: [
-                      {
-                        $match: {
-                          $expr: {
-                            $and: [
-                              { $eq: ["$month", periodes] },
-                              { $eq: ["$unique_account_id", "$$codeclient"] },
-                            ],
+                  {
+                    $lookup: {
+                      from: "datatotracks",
+                      let: { codeclient: "$unique_account_id" },
+                      pipeline: [
+                        {
+                          $match: {
+                            $expr: {
+                              $and: [
+                                { $eq: ["$month", periodes] },
+                                { $eq: ["$unique_account_id", "$$codeclient"] },
+                              ],
+                            },
                           },
                         },
-                      },
-                    ],
-                    as: "client",
+                      ],
+                      as: "client",
+                    },
                   },
-                },
-                recherche,
-              ])
-              .then((response) => {
-                done(response);
-              });
+                  { $unwind: "$client" },
+                  recherche,
+                ])
+                .then((response) => {
+                  done(response);
+                })
+                .catch(function (err) {
+                  console.log(err);
+                });
+            } else {
+              modelClient
+                .aggregate([
+                  {
+                    $lookup: {
+                      from: "actions",
+                      localField: "actionEnCours",
+                      foreignField: "idAction",
+                      as: "action",
+                    },
+                  },
+                  { $unwind: "$action" },
+                  {
+                    $lookup: {
+                      from: "status",
+                      localField: "action.idStatus",
+                      foreignField: "idStatus",
+                      as: "status",
+                    },
+                  },
+                  { $unwind: "$status" },
+                  {
+                    $lookup: {
+                      from: "statutactions",
+                      localField: "action.idAction",
+                      foreignField: "idAction",
+                      as: "statutaction",
+                    },
+                  },
+                  {
+                    $lookup: {
+                      from: "roles",
+                      localField: "action.idRole",
+                      foreignField: "id",
+                      as: "role",
+                    },
+                  },
+                  {
+                    $addFields: {
+                      id: "$_id",
+                      actionTitle: "$action.title",
+                      statusTitle: "$status.title",
+                    },
+                  },
+                  {
+                    $lookup: {
+                      from: "datatotracks",
+                      let: { codeclient: "$unique_account_id" },
+                      pipeline: [
+                        {
+                          $match: {
+                            $expr: {
+                              $and: [
+                                { $eq: ["$month", periodes] },
+                                { $eq: ["$unique_account_id", "$$codeclient"] },
+                              ],
+                            },
+                          },
+                        },
+                      ],
+                      as: "client",
+                    },
+                  },
+                  recherche,
+                ])
+                .then((response) => {
+                  done(response);
+                })
+                .catch(function (err) {
+                  console.log(err);
+                });
+            }
           },
         ],
         function (result) {

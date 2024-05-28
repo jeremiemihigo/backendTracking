@@ -123,12 +123,14 @@ module.exports = {
                       dateDebut,
                       delaiPrevu: action?.delai,
                       action: action?.title,
+                      idAction: action.idAction,
                       dateFin: dateFin,
                       codeAgent,
                     },
                   },
                   $set: {
                     actionEnCours: etape.next,
+                    called: "called",
                   },
                 },
                 { new: true }
@@ -230,49 +232,6 @@ module.exports = {
           }
         }
       );
-    } catch (error) {
-      console.log(error);
-    }
-  },
-  ReadClientAction: (req, res) => {
-    try {
-      const { id } = req.params;
-      modelClient
-        .aggregate([
-          { $match: { actionEnCours: id, active: true } },
-          {
-            $lookup: {
-              from: "actions",
-              localField: "actionEnCours",
-              foreignField: "idAction",
-              as: "action",
-            },
-          },
-          { $unwind: "$action" },
-          {
-            $lookup: {
-              from: "status",
-              localField: "action.idStatus",
-              foreignField: "idStatus",
-              as: "status",
-            },
-          },
-          { $unwind: "$status" },
-          {
-            $lookup: {
-              from: "statutactions",
-              localField: "action.idAction",
-              foreignField: "idAction",
-              as: "statutaction",
-            },
-          },
-        ])
-        .then((response) => {
-          return res.status(200).json(response);
-        })
-        .catch(function (err) {
-          console.log(err);
-        });
     } catch (error) {
       console.log(error);
     }
