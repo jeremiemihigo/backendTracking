@@ -434,7 +434,7 @@ io.on("connection", (socket) => {
     io.emit("userConnected", onlineuser);
   });
 });
-io.listen(800);
+// io.listen(800);
 //Start server
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
