@@ -430,6 +430,7 @@ io.on("connection", (socket) => {
   });
   socket.on("disconnect", () => {
     removeUser(socket.id);
+    console.log(onlineuser);
     io.emit("userConnected", onlineuser);
   });
 });

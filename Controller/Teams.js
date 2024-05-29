@@ -75,10 +75,21 @@ module.exports = {
     }
   },
   ReadTeamsRole: (req, res) => {
+    console.log("suis la");
     try {
       const { role } = req.params;
-      Team.find({ role: role })
-        .lean()
+      Team.aggregate([
+        { $match: { role: role } },
+        {
+          $lookup: {
+            from: "agentadmins",
+            localField: "idTeam",
+            foreignField: "team",
+            as: "agent",
+          },
+        },
+      ])
+
         .then((result) => {
           if (result.length > 0) {
             return res.status(200).json(result);

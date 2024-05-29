@@ -30,7 +30,6 @@ module.exports = {
                 },
               });
             }
-
             if (
               [
                 "SYSTEM AND DATA",
@@ -111,8 +110,6 @@ module.exports = {
             }
           },
           function (recherche, done) {
-            console.log(recherche);
-            console.log(req.user.role);
             const periodes = periode();
             if (["SHOP MANAGER", "RS"].includes(req.user.role)) {
               modelClient
@@ -273,6 +270,7 @@ module.exports = {
     }
   },
   ReadManagment: (req, res) => {
+    console.log("je suis la");
     try {
       asyncLab.waterfall(
         [
