@@ -18,18 +18,6 @@ module.exports = {
                 $match: { active: true, shop_region: req.user.region },
               });
             }
-            if (req.user.role === "RS") {
-              //Tous les client à assister par le PA, et technicien
-              done(null, {
-                $match: {
-                  "client.person_in_charge": {
-                    $in: ["PA", "PA Volant", "Tech", "Tech Volant"],
-                  },
-                  shop_name: req.user.shop,
-                  active: true,
-                },
-              });
-            }
             if (
               [
                 "SYSTEM AND DATA",
@@ -78,7 +66,6 @@ module.exports = {
                     });
                   }
                   if (req.user.role === "CALL OPERATOR") {
-                    console.log(table);
                     done(null, {
                       $match: {
                         actionEnCours: { $in: table },
@@ -93,6 +80,23 @@ module.exports = {
                           {
                             "client.person_in_charge": {
                               $in: ["Tech", "Tech Volant"],
+                            },
+                            visited: "pending",
+                          },
+                          { actionEnCours: { $in: table } },
+                        ],
+                        shop_name: req.user.shop,
+                        active: true,
+                      },
+                    });
+                  }
+                  if (req.user.role === "RS") {
+                    done(null, {
+                      $match: {
+                        $or: [
+                          {
+                            "client.person_in_charge": {
+                              $in: ["PA", "PA Volant", "Tech", "Tech Volant"],
                             },
                             visited: "pending",
                           },
@@ -270,7 +274,6 @@ module.exports = {
     }
   },
   ReadManagment: (req, res) => {
-    console.log("je suis la");
     try {
       asyncLab.waterfall(
         [

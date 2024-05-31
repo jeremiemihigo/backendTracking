@@ -32,11 +32,11 @@ module.exports = {
               });
           },
           function (client, done) {
+            const dates = new Date().toISOString();
             const nextAction =
               client.actionEnCours === "Y13JKS"
                 ? "BXLMWU"
                 : client.actionEnCours === "XZ445X" && "SA89AF";
-            console.log(nextAction);
             modelClient
               .findByIdAndUpdate(client._id, {
                 $set: {
@@ -48,10 +48,13 @@ module.exports = {
                   },
                   visited: "visited",
                   actionEnCours: nextAction,
+                  updatedAt: dates.split("T")[0],
                 },
               })
               .then((result) => {
-                console.log(result);
+                if (i + 1 === data.length) {
+                  return res.status(200).json("operation carried out");
+                }
               });
           },
         ]);
