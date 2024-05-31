@@ -108,7 +108,6 @@ io.on("connection", (socket) => {
             },
 
             function (result, done) {
-              const dates = new Date().toISOString();
               modelClient
                 .findByIdAndUpdate(
                   result._id,
@@ -123,14 +122,13 @@ io.on("connection", (socket) => {
                         feedbackSelect: action?.title,
                         dateDebut,
                         delaiPrevu: ancienAction?.delai,
-                        dateFin: dates.split("T")[0],
-                        heureUpdated: dates.split("T")[1],
+                        dateFin: new Date().getTime(),
                         codeAgent,
                       },
                     },
                     $set: {
                       actionEnCours: action?.idAction,
-                      updatedAt: dates.split("T")[0],
+                      updatedAt: new Date().getTime(),
                     },
                   },
                   { new: true }
@@ -320,14 +318,13 @@ io.on("connection", (socket) => {
                         dateDebut,
                         delaiPrevu: action?.delai,
                         action: action?.title,
-                        dateFin: dates.split("T")[0],
-                        heureFin: dates.split("T")[1],
+                        dateFin: new Date().getTime(),
                         codeAgent,
                       },
                     },
                     $set: {
                       actionEnCours: etape.next,
-                      updatedAt: dates.split("T")[0],
+                      updatedAt: new Date().getTime(),
                     },
                   },
                   { new: true }
@@ -437,7 +434,7 @@ io.on("connection", (socket) => {
   });
 });
 const portIO = process.env.PORT || 800;
-// io.listen(portIO);
+io.listen(portIO);
 //Start server
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);

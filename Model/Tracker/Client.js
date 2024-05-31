@@ -104,7 +104,7 @@ const UserSchema = new mongoose.Schema({
   },
   result: { type: [label], required: false },
   active: { type: Boolean, default: true, required: true },
-  updatedAt: { type: Date, required: true },
+  updatedAt: { type: Number, required: true, default: new Date().getTime() },
 });
 // UserSchema.createIndex( { "unique_account_id":1 }, { unique: true } )
 
