@@ -49,10 +49,7 @@ const UserSchema = new mongoose.Schema({
     uppercase: true,
   },
   expiry_timestamp: { type: String, required: false, trim: true },
-  default_timestamp: {
-    type: String,
-    required: false,
-  },
+
   shop_region: {
     type: String,
     required: false,
@@ -106,7 +103,11 @@ const UserSchema = new mongoose.Schema({
   active: { type: Boolean, default: true, required: true },
   updatedAt: { type: Number, required: true, default: new Date().getTime() },
 });
-// UserSchema.createIndex( { "unique_account_id":1 }, { unique: true } )
+UserSchema.index({ unique_account_id: 1, active: 1 }, { unique: true });
+UserSchema.index({ visited: 1 });
+UserSchema.index({ actionEnCours: 1 });
+UserSchema.index({ shop_name: 1 });
+UserSchema.index({ shop_region: 1 });
 
 const model = mongoose.model("Client", UserSchema);
 module.exports = model;

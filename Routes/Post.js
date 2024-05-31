@@ -68,10 +68,8 @@ router.post("/etape", protect, Etape, ReadEtape);
 
 //Clients
 router.post("/client", protect, Clients);
-router.post("/clientfeedback", protect, PostReponse);
 router.post("/feedbackvm", pushClientVisite);
 // router.get("/demandeFeedback", protect, ReadDemandFeedback)
-router.post("/demandeFeedback", protect, RenseigneFeedback);
 //History
 router.post("/history", protect, Historique);
 //Initial

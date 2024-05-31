@@ -84,7 +84,10 @@ io.on("connection", (socket) => {
                   if (result) {
                     done(null, result);
                   } else {
-                    let erreur = { content: "Client introuvable", error: true };
+                    let erreur = {
+                      content: "Client introuvable",
+                      error: "error",
+                    };
                     io.to(socket.id).emit("renseigne", erreur);
                   }
                 })
@@ -137,7 +140,7 @@ io.on("connection", (socket) => {
                   done(null, response);
                 })
                 .catch(function (err) {
-                  let erreur = { content: "Error :" + err, error: true };
+                  let erreur = { content: "Error :" + err, error: "error" };
                   io.to(socket.id).emit("renseigne", erreur);
                 });
             },
@@ -216,10 +219,10 @@ io.on("connection", (socket) => {
           ],
           function (client) {
             if (client) {
-              let result = { content: client, error: false };
+              let result = { content: client, error: "success" };
               io.emit("renseigne", result);
             } else {
-              let erreur = { content: "Error :", error: true };
+              let erreur = { content: "Error :", error: "error" };
               io.to(socket.id).emit("renseigne", erreur);
             }
           }
@@ -253,7 +256,10 @@ io.on("connection", (socket) => {
                   if (result) {
                     done(null, result);
                   } else {
-                    let erreur = { content: "Client introuvable", error: true };
+                    let erreur = {
+                      content: "Client introuvable",
+                      error: "error",
+                    };
                     io.to(socket.id).emit("renseigne", erreur);
                   }
                 })
@@ -278,7 +284,7 @@ io.on("connection", (socket) => {
                     } else {
                       let erreur = {
                         content: "Aucune étape suivante",
-                        error: true,
+                        error: "error",
                       };
                       io.to(socket.id).emit("renseigne", erreur);
                     }
@@ -335,7 +341,7 @@ io.on("connection", (socket) => {
                 .catch(function (err) {
                   let erreur = {
                     content: "Error " + err,
-                    error: true,
+                    error: "error",
                   };
                   io.to(socket.id).emit("renseigne", erreur);
                 });
@@ -415,10 +421,10 @@ io.on("connection", (socket) => {
           ],
           function (client) {
             if (client) {
-              let result = { content: client, error: false };
+              let result = { content: client, error: "success" };
               io.emit("renseigne", result);
             } else {
-              let erreur = { content: "Error :", error: true };
+              let erreur = { content: "Error :", error: "error" };
               io.to(socket.id).emit("renseigne", erreur);
             }
           }
@@ -434,7 +440,7 @@ io.on("connection", (socket) => {
   });
 });
 const portIO = process.env.PORT || 800;
-// io.listen(portIO);
+io.listen(portIO);
 //Start server
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);

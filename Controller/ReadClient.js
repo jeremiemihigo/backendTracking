@@ -81,7 +81,7 @@ module.exports = {
                             "client.person_in_charge": {
                               $in: ["Tech", "Tech Volant"],
                             },
-                            visited: "pending",
+                            visited: "nVisited",
                           },
                           { actionEnCours: { $in: table } },
                         ],
@@ -98,7 +98,7 @@ module.exports = {
                             "client.person_in_charge": {
                               $in: ["PA", "PA Volant", "Tech", "Tech Volant"],
                             },
-                            visited: "pending",
+                            visited: "nVisited",
                           },
                           { actionEnCours: { $in: table } },
                         ],
