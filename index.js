@@ -68,7 +68,6 @@ io.on("connection", (socket) => {
         _idClient,
         status,
         role,
-        dateDebut,
         action,
         ancienAction,
         codeAgent,
@@ -95,20 +94,6 @@ io.on("connection", (socket) => {
                   console.log(err);
                 });
             },
-            function (result, done) {
-              modelAction
-                .findByIdAndUpdate(
-                  ancienAction._id,
-                  { $set: { lastchange: new Date() } },
-                  { new: true }
-                )
-                .then((response) => {
-                  done(null, result);
-                })
-                .catch(function (err) {
-                  console.log(err);
-                });
-            },
 
             function (result, done) {
               modelClient
@@ -123,7 +108,7 @@ io.on("connection", (socket) => {
                         status,
                         role,
                         feedbackSelect: action?.title,
-                        dateDebut,
+                        dateDebut: result?.updatedAt,
                         delaiPrevu: ancienAction?.delai,
                         dateFin: new Date().getTime(),
                         codeAgent,
@@ -239,7 +224,6 @@ io.on("connection", (socket) => {
           customer_id,
           status,
           role,
-          dateDebut,
           codeAgent,
           action,
         } = donner;
@@ -270,7 +254,7 @@ io.on("connection", (socket) => {
 
             function (result, done) {
               if (result.actionEnCours === "Y13JKS") {
-                done(null, {
+                done(null, result, {
                   label: "Y13JKS",
                   next: "XZ445X",
                 });
@@ -295,21 +279,6 @@ io.on("connection", (socket) => {
               }
             },
             function (result, etape, done) {
-              modelAction
-                .findByIdAndUpdate(
-                  feedbackSelect._id,
-                  { $set: { lastchange: new Date() } },
-                  { new: true }
-                )
-                .then((response) => {
-                  done(null, result, etape);
-                })
-                .catch(function (err) {
-                  console.log(err);
-                });
-            },
-            function (result, etape, done) {
-              const dates = new Date().toISOString();
               modelClient
                 .findByIdAndUpdate(
                   result._id,
@@ -321,7 +290,7 @@ io.on("connection", (socket) => {
                         customer_id,
                         status,
                         role,
-                        dateDebut,
+                        dateDebut: result?.updatedAt,
                         delaiPrevu: action?.delai,
                         action: action?.title,
                         dateFin: new Date().getTime(),

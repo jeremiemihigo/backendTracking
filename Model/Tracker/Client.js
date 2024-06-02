@@ -3,10 +3,10 @@ const mongoose = require("mongoose");
 const label = new mongoose.Schema(
   {
     feedbackSelect: { type: String, required: true, trim: true },
-    dateDebut: { type: Date, required: true, trim: true },
+    dateDebut: { type: Number, required: true, trim: true },
     delaiPrevu: { type: Number, required: true },
     action: { type: String, required: true, trim: true },
-    dateFin: { type: Date, required: true, trim: true },
+    dateFin: { type: Number, required: true, trim: true },
     commentaire: { type: String, required: false, trim: true },
     status: { type: String, required: true, trim: true },
     role: { type: String, required: true },

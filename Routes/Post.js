@@ -1,5 +1,5 @@
 const express = require("express");
-const { LoginAgentAdmin } = require("../Controller/Login");
+const { LoginAgentAdmin, UpdatePassword } = require("../Controller/Login");
 const { MainProcess, ReadMainProcess } = require("../Controller/MainProcess");
 const router = express.Router();
 
@@ -44,6 +44,7 @@ const { pushClientVisite } = require("../Controller/VisiteMenage");
 router.post("/agent", AddAdminAgent, ReadAgent);
 //Login
 router.post("/login", LoginAgentAdmin);
+router.post("/resetpassword", UpdatePassword);
 
 //Main process
 router.post("/main", protect, MainProcess, ReadMainProcess);
