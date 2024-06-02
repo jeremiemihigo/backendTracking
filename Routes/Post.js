@@ -21,6 +21,7 @@ const {
   Clients,
   PostReponse,
   RenseigneFeedback,
+  PostClient,
 } = require("../Controller/Client");
 const { Historique } = require("../Controller/History");
 const { Initiale, ReadInitiale } = require("../Controller/Initiale");
@@ -70,7 +71,7 @@ router.post("/etape", protect, Etape, ReadEtape);
 //Clients
 router.post("/client", protect, Clients);
 router.post("/feedbackvm", pushClientVisite);
-// router.get("/demandeFeedback", protect, ReadDemandFeedback)
+router.post("/postclient", protect, PostClient);
 //History
 router.post("/history", protect, Historique);
 //Initial
