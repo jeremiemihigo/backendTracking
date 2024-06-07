@@ -417,8 +417,8 @@ io.on("connection", (socket) => {
 app.get("/message", (req, res) => {
   return res.status(200).json("je suis un message");
 });
-const portIO = process.env.PORT || 800;
-io.listen(portIO);
+const portIO = process.env.PORT || 5000;
+// io.listen(portIO);
 //Start server
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
